@@ -21,13 +21,13 @@ import ckan.lib.search as search
 import ckan.logic as logic
 import ckan.authz as authz
 import ckan.lib.jinja_extensions as jinja_extensions
+
 from ckan.lib.webassets_tools import webassets_init
 from ckan.lib.i18n import build_js_translations
-from ckan.config import Key
+from ckan.config.declaration import Key, Flag
 
 from ckan.common import _, ungettext, config, config_declaration
 from ckan.exceptions import CkanConfigurationException
-
 log = logging.getLogger(__name__)
 
 # Suppress benign warning 'Unbuilt egg for setuptools'
@@ -234,11 +234,7 @@ def update_config():
     engine = sqlalchemy.engine_from_config(config)
     model.init_model(engine)
 
-    config_declaration.reset()
-    config_declaration.load_core_declaration()
-    for plugin in reversed(list(p.PluginImplementations(p.IConfigDeclaration))):
-        plugin.declare_config_options(config_declaration, Key())
-    config_declaration.seal()
+    config_declaration.setup(config)
 
     for plugin in p.PluginImplementations(p.IConfigurable):
         plugin.configure(config)
